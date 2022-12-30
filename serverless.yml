@@ -1,0 +1,33 @@
+service: winget-package-api
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+
+custom:
+  webpack:
+    webpackConfig: ./webpack.config.js
+    includeModules: false
+
+functions:
+  onRetrieveOwner:
+    timeout: 30
+    handler: src/onRetrieveOwner.handler
+    events:
+      - http:
+          path: /app/{owner}
+          method: get
+
+  onRetrieveProduct:
+    timeout: 30
+    handler: src/onRetrieveProduct.handler
+    events:
+      - http:
+          path: /app/{owner}/{package}
+          method: get
+
+plugins:
+  - serverless-webpack
+  - serverless-offline
