@@ -2,6 +2,8 @@ export default class Defs {
     static STATUS_CODE_SUCCESS = 200
     static STATUS_CODE_ERROR = 404
 
-    static CHOCOLATEY_URL = 'https://community.chocolatey.org/packages'
-    static CHOCOLATEY_CATCH_ERROR = 'The package name is invalid.'
+    static WINGET_URL = 'https://github.com/microsoft/winget-pkgs/tree/master/manifests'
+    static WINGET_CATCH_ERROR_OWNER = 'It is case sensitive, so please spell it correctly.'
+
+    static ZLIB_RESPONSE_TYPE = 'responseType'
 }

@@ -12,20 +12,12 @@ custom:
     includeModules: false
 
 functions:
-  onRetrieveOwner:
+  handler:
     timeout: 30
-    handler: src/onRetrieveOwner.handler
+    handler: handler.index
     events:
       - http:
-          path: /app/{owner}
-          method: get
-
-  onRetrieveProduct:
-    timeout: 30
-    handler: src/onRetrieveProduct.handler
-    events:
-      - http:
-          path: /app/{owner}/{package}
+          path: /app/{owner}/{product}
           method: get
 
 plugins:
