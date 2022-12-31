@@ -1,25 +1,29 @@
 'use strict'
 
+import Response from './assets/response'
+import Defs from './assets/constants'
 import axios from 'axios'
 import zlib from 'zlib'
 import * as cheerio from 'cheerio'
-import Response from './assets/response'
-import Defs from './assets/constants'
 
-const getGunzipSync = (packageName) => {
-    return new Promise(async resolve => {
-        try {
-            const html = await axios.get(`${Defs.CHOCOLATEY_URL}/${packageName}`, { responseType: 'arraybuffer' })
-            zlib.gunzip(html.data, (err, output) => {
-                if (err) {
-                    throw new Error('zlib error')
-                }
-                resolve(output.toString())
-            })
-        } catch (error) {
-            resolve(false)
-        }
-    })
+const onError = (msg) => {
+    throw new Error(`ERROR :: RETRIEVE :: ${msg}`)
+}
+
+const getFirstLetter = async (owner) => {
+    return owner.substring(0, 1).toLowerCase()
+}
+
+const getGunzipSync = async ({ owner, product }) => {
+    try {
+        const html = await axios.get(`${Defs.WINGET_URL}/${await getFirstLetter(owner)}/${owner}/${product}`, {
+            responseType: Defs.ZLIB_RESPONSE_TYPE
+        })
+
+        return zlib.gunzipSync(html.data).toString()
+    } catch (err) {
+        onError(err['message'])
+    }
 }
 
 export const index = async (event, context) => {
@@ -27,81 +31,13 @@ export const index = async (event, context) => {
     const app = {}
 
     try {
-        const $ = cheerio.load(await getGunzipSync(event.pathParameters['packageName']))
-        const $main = $('#package-sidebar')
+        const $ = cheerio.load(await getGunzipSync(event["pathParameters"]))
+        const $main = $("[data-test-selector='subdirectory-container']")
 
-        app['Name'] = event.pathParameters['packageName']
-        app['Downloads'] = $main.find('h3:eq(0)').text()
-        app['Last Update'] = $main.find('h3:eq(2)').text()
-        app['Package Maintainer(s)'] = []
-        $main.find('ul:eq(0)').children('li').each((i, li) => {
-            $(li).find('span').each((i, span) => {
-                app['Package Maintainer(s)'].push($(span).text())
-            })
-        })
+        app['main'] = $main.html()
 
-        app['Software Author(s)'] = $main.find('ul:eq(1)').text().replace(/(\s\s+)/g, ' ').trim()
-        app['Tags'] = []
-        $main.find('.badge, .bg-primary').each((i, a) => {
-            if (app['Tags'].indexOf($(a).text()) < 0) {
-                app['Tags'].push($(a).text())
-            }
-        })
-
-        app['Additional Links'] = {}
-        $main.find('#additional-links').children('ul').each((i, ul) => {
-            $(ul).find('li > a').each((j, a) => {
-                app['Additional Links'][$(a).text().replace(/[\?\:]/g, '').trim()] = $(a).attr('href')
-            })
-        })
-
-        app['Description'] = $('#description').text().replace(/(\s\s+)/g, '')
-        app['Files'] = []
-        $('#files').children('div').each((i, div) => {
-            $(div).find('span').each((j, span) => {
-                app['Files'].push($(span).text())
-            })
-        })
-
-        app['Virus Scan Results'] = {}
-        $main.find('#virus').children('ul').each((i, ul) => {
-            $(ul).find('li > a').each((j, a) => {
-                app['Virus Scan Results'][$(a).text()] = $(a).attr('href')
-            })
-        })
-
-        app['Version History'] = {}
-        $main.find('#versionhistory').children().each((i, tbl) => {
-            $(tbl).find('tbody tr').each((j, tr) => {
-                const version = $(tr).find('td').eq(1).text().trim().split(/\s/g)
-
-                if (version.length > 0) {
-                    app['Version History'][version[version.length - 1]] = {
-                        Downloads: $(tr).find('td').eq(2).text().trim(),
-                        "Last Updated": $(tr).find('td').eq(3).text().trim(),
-                        Status: $(tr).find('td').eq(4).text().trim()
-                    }
-                }
-            })
-        })
-
-        app['Copyright'] = $main.find('#copyright p').text()
-        app['Release Notes'] = []
-        $main.find('#releasenotes p').children().each((i, p) => {
-            if ($(p).text()) {
-                app['Release Notes'].push($(p).text())
-            }
-        })
-
-        app['Dependencies'] = []
-        $main.find('#dependencySets').children().each((i, ul) => {
-            $(ul).find('li > span').each((j, span) => {
-                app['Dependencies'].push($(span).text().replace(/(\s\s+)/g, ' ').trim())
-            })
-        })
-    } catch (error) {
-        return Response.success(Defs.CHOCOLATEY_CATCH_ERROR)
+        return Response.success(app)
+    } catch (err) {
+        return Response.error(Defs.WINGET_CATCH_ERROR_OWNER)
     }
-
-    return Response.success(app)
 }
