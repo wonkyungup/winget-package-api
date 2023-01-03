@@ -3,8 +3,8 @@
 import Response from './assets/response'
 import Defs from './assets/constants'
 import axios from 'axios'
-import zlib from 'zlib'
 import * as cheerio from 'cheerio'
+import * as zlib from 'zlib'
 
 const onError = (msg) => {
     throw new Error(`ERROR :: RETRIEVE :: ${msg}`)
@@ -14,13 +14,10 @@ const getFirstLetter = async (owner) => {
     return owner.substring(0, 1).toLowerCase()
 }
 
-const getGunzipSync = async ({ owner, product }) => {
+const getElement = async ({ owner, product }) => {
     try {
-        const html = await axios.get(`${Defs.WINGET_URL}/${await getFirstLetter(owner)}/${owner}/${product}`, {
-            responseType: Defs.ZLIB_RESPONSE_TYPE
-        })
-
-        return zlib.gunzipSync(html.data).toString()
+        const html = await axios.get(`${Defs.WINGET_URL}/${await getFirstLetter(owner)}/${owner}/${product}`, { [Defs.STR_RESPONSE_TYPE]: Defs.STR_ARRAY_BUFFER })
+        return zlib.unzipSync(html['data'])
     } catch (err) {
         onError(err['message'])
     }
@@ -31,7 +28,7 @@ export const index = async (event, context) => {
     const app = {}
 
     try {
-        const $ = cheerio.load(await getGunzipSync(event["pathParameters"]))
+        const $ = cheerio.load(await getElement(event["pathParameters"]))
         const $main = $("[data-test-selector='subdirectory-container']")
 
         app['main'] = $main.html()

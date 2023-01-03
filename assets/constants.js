@@ -5,5 +5,6 @@ export default class Defs {
     static WINGET_URL = 'https://github.com/microsoft/winget-pkgs/tree/master/manifests'
     static WINGET_CATCH_ERROR_OWNER = 'It is case sensitive, so please spell it correctly.'
 
-    static ZLIB_RESPONSE_TYPE = 'responseType'
+    static STR_RESPONSE_TYPE = 'responseType'
+    static STR_ARRAY_BUFFER = 'arraybuffer'
 }
