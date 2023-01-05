@@ -14,6 +14,10 @@ export const index = async (event, context) => {
         winget['name'] = app.getAppName()
         winget['owner'] = app.getAppOwner()
         winget['versions'] = await app.getAppVersions()
+        winget['last_package'] = {
+            version: winget['versions'][0],
+            content: await app.getAppLastPackage(winget['versions'][0])
+        }
 
         return Response.success(winget)
     } catch (err) {
