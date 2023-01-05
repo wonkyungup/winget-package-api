@@ -13,10 +13,17 @@ export default class App {
         throw new Error(`ERROR :: RETRIEVE :: ${msg}`)
     }
 
-    async $ () {
-        let html = await axios.get(`${Defs.WINGET_URL}/${await this.getFirstLetter()}/${this.owner}/${this.product}`, { [Defs.STR_RESPONSE_TYPE]: Defs.STR_ARRAY_BUFFER })
-        html = zlib.unzipSync(html['data'])
-        return cheerio.load(html)
+    async $ (target) {
+        let uri = `${Defs.WINGET_URL}/${await this.getFirstLetter()}/${this.owner}/${this.product}`
+        let result
+
+        if (target) {
+            uri = `${uri}/${target}`
+        }
+
+        result = await axios.get(uri, { [Defs.STR_RESPONSE_TYPE]: Defs.STR_ARRAY_BUFFER })
+        result = zlib.unzipSync(result['data'])
+        return cheerio.load(result)
     }
 
     async getFirstLetter (){
@@ -33,15 +40,23 @@ export default class App {
 
     async getAppVersions () {
         const _$ = await this.$()
-        const $versions = _$("[data-test-selector='subdirectory-container']").find("[aria-labelledby='files']")
+        const exceptList = ['', '. .', '.validation']
         const list = []
+        const $versions = _$("[data-test-selector='subdirectory-container']").find("[aria-labelledby='files']")
 
         $versions.children("[role='row']").each((index, row) => {
-            if (index > 1) {
-                list.push(_$(row).find('span').text())
+            const version = _$(row).find('span').eq(0).text().trim()
+
+            if (!exceptList.includes(version)) {
+                list.push(version)
             }
         })
 
         return list.sort((a, b) => b.localeCompare(a, undefined, { numeric: true }))
+    }
+
+    async getAppLastPackage (lastVersion) {
+        const _$ = await this.$(lastVersion)
+        return _$.text()
     }
 }
