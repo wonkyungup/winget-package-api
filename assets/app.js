@@ -101,14 +101,13 @@ export default class App {
             const obj = {}
             $text.children("tr").each((index, tr) => {
                 index++
-                if (index > 3) {
-                    const td = _$(tr).find(`#LC${index}`)
-                    const key = td.find('span').eq(0).text().replace(/[^a-zA-Z0-9]/g, '')
-                    const value = td.find('span').eq(1).text()
 
-                    if (key && value) {
-                        obj[key] = value.replace(/[^a-zA-Z0-9.:///&-]/g, '')
-                    }
+                const td = _$(tr).find(`#LC${index}`)
+                const key = td.find('span').eq(0).text().replace(/[^a-zA-Z0-9]/g, '')
+                const value = td.find('span').eq(1).text().replace(/[^a-zA-Z0-9.,©:/&-]/g, '')
+
+                if (key && value) {
+                    obj[key] = value
                 }
             })
 
