@@ -107,7 +107,7 @@ export default class App {
                     const value = td.find('span').eq(1).text()
 
                     if (key && value) {
-                        obj[key] = value.replace(/[^a-zA-Z0-9.://-_]/g, '')
+                        obj[key] = value.replace(/[^a-zA-Z0-9.:///&-]/g, '')
                     }
                 }
             })
