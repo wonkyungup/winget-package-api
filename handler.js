@@ -15,8 +15,12 @@ export const index = async (event, context) => {
         winget['owner'] = app.getAppOwner()
         winget['versions'] = await app.getAppVersions()
         winget['last_package'] = {
-            version: winget['versions'][0],
-            content: await app.getAppLastPackage(winget['versions'][0])
+            version: app.versions[0],
+            files: await app.getAppLastPackageFiles()
+        }
+
+        for (let index = 0; index < app.files.length; index++) {
+            winget['last_package'][app.files[index]] = await app.getAppLastPackageFileContent(app.files[index])
         }
 
         return Response.success(winget)
