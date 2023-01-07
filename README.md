@@ -1,4 +1,4 @@
-# Winget-api
+# Winget-package-api
 
 ## Contents
 
