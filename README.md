@@ -10,6 +10,7 @@
 
 To get your owner & product package name, please do the following:
 
+- Please be sure to distinguish between uppercase and lowercase letters.
 - You will need the "company" and "product name" you are looking for. 
   - Github [winget-pkgs](https://github.com/microsoft/winget-pkgs/tree/master/manifests)
   - Command [window-install](https://learn.microsoft.com/windows/package-manager/winget/)
